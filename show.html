@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Html2canvas</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+  </head>
+
+  <body>
+    <div class="form" id="box">
+      <form id="formElem">
+        <input type="text" name="id" placeholder="id" />
+        <br /><br />
+        <input type="text" name="Hname" placeholder="name" /><br /><br />
+        <input type="text" name="image" placeholder="image" />
+        <br /><br />
+        <input type="submit" onClick="submit" value="Send" /><br /><br />
+        <button><a href="http://127.0.0.1:5500/show.html">Form</a></button
+        ><br /><br />
+        <input type="button" value="Receive" onclick="getValue()" />
+      </form>
+    </div>
+    <div class="container" id="container"></div>
+    <script>
+      function getValue() {
+        fetch("http://localhost:3000/data")
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          console.log(data.image);
+          const loop = document.getElementById("container");
+          data.forEach((e) => {
+              loop.innerHTML =
+                loop.innerHTML +
+                ` <div>
+                          <p>${e.id}</p>
+                          <span>
+                            <p>${e.Hname.split("|||")[0]}</p>
+                            <p>${e.Hname.split("|||")[1]}
+                          <span>
+                          <span>
+                            <p>${ e.image.split("data:image")[0]}</p>
+                            <textarea rows="4" cols="50">${e.image.split("base64,")[1]}</textarea>
+                          </span>
+                        <hr>
+                        </div>`;
+            });
+          });
+      }
+
+      // new approach
+      const url = "http://localhost:3000/addData";
+      const formEl = document.getElementById("formElem");
+      formEl.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        let canvas = await html2canvas(document.querySelector("#box"), {
+          background: "#fff",
+        });
+        let base64URL = canvas
+          .toDataURL("image/jpeg")
+          .replace("image/jpeg", "image/octet-stream");
+        const formData = new FormData(formEl);
+        const formDataSerialized = Object.fromEntries(formData);
+        formDataSerialized["image"] = formDataSerialized["image"]+ base64URL;
+        formDataSerialized["Hname"] = formDataSerialized["Hname"] + '|||' + new Date();
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify(formDataSerialized),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const json = await response.json();
+          //console.log(json);
+          alert("completed");
+          window.location.href = "http://127.0.0.1:5500/show.html";
+        } catch (e) {
+          console.error(e);
+          alert("there as an error");
+        }
+      });
+    </script>
+  </body>
+</html>
