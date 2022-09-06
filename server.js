@@ -16,10 +16,10 @@ app.use(
 // database connection
 const mysql = require("mysql");
 const conn = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "admin",
-  database: "atulbhardwaj",
+  host: "_hostport_",
+  user: "_username_",
+  password: "_password_",
+  database: "_databaseName_",
   port:"3306"
 });
 
